@@ -17,7 +17,7 @@ struct TrackOption {
 struct StatusChip: View {
     let text: String
     var body: some View {
-        Text(text).font(font(15)).foregroundStyle(Palette.text)
+        Text(text).font(.s(15)).foregroundStyle(Palette.text)
             .padding(.horizontal, 16.dp).padding(.vertical, 8.dp)
             .background(Capsule().fill(Color(hex: 0xCC0A0C10)))
     }
@@ -42,7 +42,7 @@ struct TopStrip: View {
     let connected: Bool
     var body: some View {
         HStack(spacing: 20.dp) {
-            if let who = st.changedBy, let t = actionText(who, st.action) { Text(t).font(font(17)).foregroundStyle(Palette.dim) }
+            if let who = st.changedBy, let t = actionText(who, st.action) { Text(t).font(.s(17)).foregroundStyle(Palette.dim) }
             Spacer()
             ViewersChip(connected: connected, members: members.filter(\.watching))
             ClockView(size: 26)
@@ -62,9 +62,9 @@ private struct BottomPanel<Content: View>: View {
         VStack(alignment: .leading, spacing: 16.dp) {
             content()
             HStack {
-                if !status.isEmpty { Text(status).font(font(14)).foregroundStyle(Palette.status) }
+                if !status.isEmpty { Text(status).font(.s(14)).foregroundStyle(Palette.status) }
                 Spacer()
-                Text(hints).font(font(13)).foregroundStyle(Palette.faint)
+                Text(hints).font(.s(13)).foregroundStyle(Palette.faint)
             }
         }
         .padding(EdgeInsets(top: 80.dp, leading: 56.dp, bottom: 40.dp, trailing: 56.dp))
@@ -88,10 +88,10 @@ struct StreamOverlay: View {
                     Thumb(url: api.abs(media.image), fallback: media.subtitle ?? media.title, corner: 10).frame(width: 150.dp, height: 84.dp)
                     VStack(alignment: .leading, spacing: 6.dp) {
                         HStack(spacing: 12.dp) {
-                            Text(media.subtitle ?? media.title).font(font(22, .bold)).lineLimit(1)
+                            Text(media.subtitle ?? media.title).font(.s(22, .bold)).lineLimit(1)
                             LiveBadge()
                         }
-                        if media.subtitle != nil { Text(media.title).font(font(18)).foregroundStyle(Palette.dim).lineLimit(2) }
+                        if media.subtitle != nil { Text(media.title).font(.s(18)).foregroundStyle(Palette.dim).lineLimit(2) }
                     }
                     Spacer(minLength: 0)
                 }
@@ -121,21 +121,21 @@ struct LiveOverlay: View {
                     Thumb(url: api.abs(media.image), fallback: media.title, corner: 10).frame(width: 150.dp, height: 84.dp)
                     VStack(alignment: .leading, spacing: 6.dp) {
                         HStack(spacing: 12.dp) {
-                            if let n = channel?.number { Text("\(n)").font(font(20)).foregroundStyle(Palette.dim) }
-                            Text(media.title).font(font(26, .bold)).lineLimit(1)
+                            if let n = channel?.number { Text("\(n)").font(.s(20)).foregroundStyle(Palette.dim) }
+                            Text(media.title).font(.s(26, .bold)).lineLimit(1)
                             LiveBadge()
                         }
-                        Text(cur?.title ?? tr("No programme information")).font(font(19)).foregroundStyle(cur != nil ? Palette.text : Palette.faint).lineLimit(1)
+                        Text(cur?.title ?? tr("No programme information")).font(.s(19)).foregroundStyle(cur != nil ? Palette.text : Palette.faint).lineLimit(1)
                         if let cur {
                             HStack(spacing: 12.dp) {
-                                Text(hhmm(cur.start)).font(font(14)).foregroundStyle(Palette.dim)
+                                Text(hhmm(cur.start)).font(.s(14)).foregroundStyle(Palette.dim)
                                 ProgressLine(fraction: cur.progress(t))
-                                Text(hhmm(cur.end)).font(font(14)).foregroundStyle(Palette.dim)
+                                Text(hhmm(cur.end)).font(.s(14)).foregroundStyle(Palette.dim)
                             }
                             .padding(.top, 4.dp)
                         }
                         if let nxt {
-                            Text(tr("Up next") + "  \(hhmm(nxt.start))  \(nxt.title)").font(font(15)).foregroundStyle(Palette.dim).lineLimit(1)
+                            Text(tr("Up next") + "  \(hhmm(nxt.start))  \(nxt.title)").font(.s(15)).foregroundStyle(Palette.dim).lineLimit(1)
                         }
                     }
                     Spacer(minLength: 0)
@@ -159,20 +159,20 @@ struct VodOverlay: View {
         ZStack {
             top
             if st.paused && !st.waiting {
-                Text("❚❚").font(font(64)).foregroundStyle(Color(hex: 0xE6FFFFFF))
+                Text("❚❚").font(.s(64)).foregroundStyle(Color(hex: 0xE6FFFFFF))
                     .padding(.horizontal, 34.dp).padding(.vertical, 18.dp)
                     .background(Capsule().fill(Color(hex: 0x66000000)))
             }
             VStack(alignment: .leading, spacing: 0) {
-                Text(media.title).font(font(30, .bold)).lineLimit(1)
-                if let s = media.subtitle { Text(s).font(font(18)).foregroundStyle(Palette.dim).lineLimit(1) }
+                Text(media.title).font(.s(30, .bold)).lineLimit(1)
+                if let s = media.subtitle { Text(s).font(.s(18)).foregroundStyle(Palette.dim).lineLimit(1) }
                 ProgressLine(fraction: duration > 0 ? position / duration : 0, color: seeking ? Palette.gold : Palette.accent, height: 6).padding(.top, 18.dp)
                 HStack(spacing: 20.dp) {
-                    Text(formatTime(position)).font(font(16)).foregroundStyle(seeking ? Palette.gold : Palette.text)
-                    if !status.isEmpty { Text(status).font(font(14)).foregroundStyle(Palette.status) }
+                    Text(formatTime(position)).font(.s(16)).foregroundStyle(seeking ? Palette.gold : Palette.text)
+                    if !status.isEmpty { Text(status).font(.s(14)).foregroundStyle(Palette.status) }
                     Spacer()
-                    Text(hints).font(font(13)).foregroundStyle(Palette.faint)
-                    Text(duration > 0 ? "-" + formatTime(duration - position) : "").font(font(16)).foregroundStyle(Palette.dim)
+                    Text(hints).font(.s(13)).foregroundStyle(Palette.faint)
+                    Text(duration > 0 ? "-" + formatTime(duration - position) : "").font(.s(16)).foregroundStyle(Palette.dim)
                 }
                 .padding(.top, 10.dp)
             }
@@ -192,10 +192,10 @@ struct UpNextCard: View {
         HStack(spacing: 18.dp) {
             Thumb(url: api.abs(upNext.item.image), fallback: upNext.item.title, fit: false, corner: 8).frame(width: 150.dp, height: 84.dp)
             VStack(alignment: .leading, spacing: 0) {
-                Text(tr("UP NEXT")).font(font(12, .bold)).tracking(1.5.dp).foregroundStyle(Palette.accent)
-                Text(upNext.item.title).font(font(18, .semibold)).lineLimit(1)
-                if let s = upNext.item.subtitle { Text(s).font(font(15)).foregroundStyle(Palette.dim).lineLimit(1) }
-                Text(tr("Starts in {n} s   ·   OK play now   ·   Menu cancel", ["n": Int(secondsLeft) + 1])).font(font(13)).foregroundStyle(Palette.faint).padding(.top, 8.dp)
+                Text(tr("UP NEXT")).font(.s(12, .bold)).tracking(1.5.dp).foregroundStyle(Palette.accent)
+                Text(upNext.item.title).font(.s(18, .semibold)).lineLimit(1)
+                if let s = upNext.item.subtitle { Text(s).font(.s(15)).foregroundStyle(Palette.dim).lineLimit(1) }
+                Text(tr("Starts in {n} s   ·   OK play now   ·   Menu cancel", ["n": Int(secondsLeft) + 1])).font(.s(13)).foregroundStyle(Palette.faint).padding(.top, 8.dp)
             }
             Spacer(minLength: 0)
         }
@@ -218,8 +218,8 @@ struct QueuePanel: View {
         let startIdx = currentIdx + 1 < queue.items.count ? currentIdx + 1 : max(0, currentIdx)
         let keys = uniqueKeys(queue.items)
         VStack(alignment: .leading, spacing: 0) {
-            Text(tr("Up next")).font(font(16, .bold)).foregroundStyle(Palette.dim).padding(.leading, 8.dp)
-            if let t = queue.title { Text(t).font(font(13)).foregroundStyle(Palette.faint).lineLimit(1).padding(.leading, 8.dp).padding(.top, 2.dp) }
+            Text(tr("Up next")).font(.s(16, .bold)).foregroundStyle(Palette.dim).padding(.leading, 8.dp)
+            if let t = queue.title { Text(t).font(.s(13)).foregroundStyle(Palette.faint).lineLimit(1).padding(.leading, 8.dp).padding(.top, 2.dp) }
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(spacing: 4.dp) {
@@ -228,14 +228,14 @@ struct QueuePanel: View {
                             FocusRow(selected: playing, height: 76,
                                      onFocus: { if !playing && !item.unavailable { focusedItem = item } },
                                      action: { if !item.unavailable { onPick(item) } }) {
-                                Text("\(idx + 1)").font(font(13)).foregroundStyle(Palette.faint).frame(width: 30.dp, alignment: .leading)
+                                Text("\(idx + 1)").font(.s(13)).foregroundStyle(Palette.faint).frame(width: 30.dp, alignment: .leading)
                                 Thumb(url: api.abs(item.image), fallback: item.title, fit: false, corner: 6).frame(width: 96.dp, height: 54.dp)
                                 Spacer().frame(width: 12.dp)
                                 VStack(alignment: .leading, spacing: 0) {
-                                    if playing { Text(tr("Now playing").uppercased()).font(font(10, .bold)).tracking(1.dp).foregroundStyle(Palette.accent) }
-                                    Text(item.title).font(font(14, .medium)).lineLimit(playing ? 1 : 2)
+                                    if playing { Text(tr("Now playing").uppercased()).font(.s(10, .bold)).tracking(1.dp).foregroundStyle(Palette.accent) }
+                                    Text(item.title).font(.s(14, .medium)).lineLimit(playing ? 1 : 2)
                                     let sub = [item.subtitle, item.duration.flatMap { $0 > 0 ? formatTime($0) : nil }].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: "  ·  ")
-                                    if !sub.isEmpty { Text(sub).font(font(12)).opacity(0.7).lineLimit(1) }
+                                    if !sub.isEmpty { Text(sub).font(.s(12)).opacity(0.7).lineLimit(1) }
                                 }
                                 Spacer(minLength: 0)
                             }
@@ -265,14 +265,14 @@ struct ChatPanel: View {
     let messages: [ChatMsg]
     var body: some View {
         VStack(alignment: .leading, spacing: 10.dp) {
-            Text(tr("Chat")).font(font(16, .bold)).foregroundStyle(Palette.dim)
-            if messages.isEmpty { Text(tr("Waiting for messages…")).font(font(14)).foregroundStyle(Palette.faint) }
+            Text(tr("Chat")).font(.s(16, .bold)).foregroundStyle(Palette.dim)
+            if messages.isEmpty { Text(tr("Waiting for messages…")).font(.s(14)).foregroundStyle(Palette.faint) }
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 6.dp) {
                         ForEach(messages) { m in
                             (Text(m.user).bold().foregroundColor(m.color.flatMap { Color(css: $0) } ?? Palette.accent) + Text("  " + m.text).foregroundColor(Palette.text))
-                                .font(font(15)).id(m.id)
+                                .font(.s(15)).id(m.id)
                         }
                     }
                 }
@@ -300,7 +300,7 @@ struct ChannelPanel: View {
         HStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 12.dp) {
                 HStack {
-                    Text(title).font(font(20, .bold))
+                    Text(title).font(.s(20, .bold))
                     Spacer()
                     ClockView(size: 20)
                 }
@@ -342,22 +342,22 @@ struct SettingsPanel: View {
         HStack(spacing: 0) {
             Color(hex: 0x33000000)
             VStack(alignment: .leading, spacing: 0) {
-                Text(tr("Settings")).font(font(22, .bold)).padding(.leading, 14.dp)
-                Text(tr("Only affects this TV")).font(font(14)).foregroundStyle(Palette.faint).padding(.leading, 14.dp).padding(.top, 2.dp).padding(.bottom, 14.dp)
+                Text(tr("Settings")).font(.s(22, .bold)).padding(.leading, 14.dp)
+                Text(tr("Only affects this TV")).font(.s(14)).foregroundStyle(Palette.faint).padding(.leading, 14.dp).padding(.top, 2.dp).padding(.bottom, 14.dp)
                 ScrollView {
                     VStack(alignment: .leading, spacing: 2.dp) {
                         ForEach(Array(sections.enumerated()), id: \.offset) { si, section in
                             SectionLabel(text: section.0).padding(.leading, 14.dp).padding(.bottom, 6.dp).padding(.top, si > 0 ? 18.dp : 0)
                             ForEach(Array(section.1.enumerated()), id: \.offset) { _, opt in
                                 FocusRow(selected: opt.selected, height: 52, action: opt.apply) {
-                                    Text(opt.selected ? "✓" : opt.action ? "›" : "").font(font(17, .bold)).frame(width: 30.dp, alignment: .leading)
-                                    Text(opt.label).font(font(17)).lineLimit(1)
+                                    Text(opt.selected ? "✓" : opt.action ? "›" : "").font(.s(17, .bold)).frame(width: 30.dp, alignment: .leading)
+                                    Text(opt.label).font(.s(17)).lineLimit(1)
                                     Spacer(minLength: 0)
                                 }
                             }
                         }
                         if sections.isEmpty {
-                            Text(tr("No settings for this video")).font(font(14)).foregroundStyle(Palette.faint).padding(.leading, 14.dp)
+                            Text(tr("No settings for this video")).font(.s(14)).foregroundStyle(Palette.faint).padding(.leading, 14.dp)
                         }
                     }
                 }

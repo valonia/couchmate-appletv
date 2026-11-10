@@ -14,8 +14,10 @@ extension CGFloat {
     var dp: CGFloat { self * uiScale }
 }
 
-/// A font size in the Android app's units.
-func font(_ size: Double, _ weight: Font.Weight = .regular) -> Font { .system(size: CGFloat(size) * uiScale, weight: weight) }
+extension Font {
+    /// A font size in the Android app's units: .font(.s(16, .bold)).
+    static func s(_ size: Double, _ weight: Font.Weight = .regular) -> Font { .system(size: CGFloat(size) * uiScale, weight: weight) }
+}
 
 /// Colours – dark and compact.
 enum Palette {

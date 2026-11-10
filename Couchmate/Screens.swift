@@ -20,14 +20,14 @@ struct SearchView: View {
                 HStack(spacing: 14.dp) {
                     PathIcon(path: AppIcon.search, size: 26).foregroundStyle(Palette.dim)
                     TextField(tr("Search everything…"), text: $query)
-                        .font(font(22))
+                        .font(.s(22))
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                 }
                 .frame(maxWidth: 1100.dp, alignment: .leading)
                 let sections = (result ?? []).flatMap { p in p.sections.filter { !$0.items.isEmpty }.map { (p, $0) } }
                 Text(statusText(sections.isEmpty))
-                    .font(font(14)).foregroundStyle(error != nil ? Palette.error : Palette.faint)
+                    .font(.s(14)).foregroundStyle(error != nil ? Palette.error : Palette.faint)
                     .padding(.leading, 28.dp).padding(.top, 4.dp).padding(.bottom, 8.dp)
                 if !sections.isEmpty {
                     let several = (result ?? []).count > 1
@@ -92,8 +92,8 @@ struct HistoryView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 0) {
-                Text(tr("History")).font(font(24, .bold))
-                Text("   " + tr("What you have watched together")).font(font(16)).foregroundStyle(Palette.faint)
+                Text(tr("History")).font(.s(24, .bold))
+                Text("   " + tr("What you have watched together")).font(.s(16)).foregroundStyle(Palette.faint)
                 Spacer()
                 if !(entries ?? []).isEmpty {
                     Pill(text: tr("Clear history")) { sync.historyClear(); entries = [] }
@@ -103,7 +103,7 @@ struct HistoryView: View {
             if let list = entries {
                 if list.isEmpty {
                     Text(tr("Nothing here yet. Everything you start is saved here, and movies and episodes can be resumed where you left off."))
-                        .font(font(16)).foregroundStyle(Palette.dim).padding(12.dp)
+                        .font(.s(16)).foregroundStyle(Palette.dim).padding(12.dp)
                 } else {
                     ScrollView {
                         LazyVStack(spacing: 2.dp) {
@@ -159,15 +159,15 @@ private struct HistoryRow: View {
                 Spacer().frame(width: 18.dp)
                 VStack(alignment: .leading, spacing: 0) {
                     HStack(spacing: 10.dp) {
-                        Text(e.title).font(font(18, .semibold)).lineLimit(1)
+                        Text(e.title).font(.s(18, .semibold)).lineLimit(1)
                         if e.live { LiveBadge() }
-                        if playingNow { Text(tr("▶ Playing now")).font(font(13)) }
+                        if playingNow { Text(tr("▶ Playing now")).font(.s(13)) }
                     }
-                    if let s = e.subtitle { Text(s).font(font(14)).opacity(0.7).lineLimit(1) }
+                    if let s = e.subtitle { Text(s).font(.s(14)).opacity(0.7).lineLimit(1) }
                     HStack(spacing: 14.dp) {
                         Text([e.startedBy.map { tr("{name} started it", ["name": $0]) }, whenText(e.lastAt)].compactMap { $0 }.joined(separator: "  ·  "))
-                            .font(font(13)).opacity(0.6)
-                        if let r = remaining(e) { Text(r).font(font(13)).foregroundStyle(e.finished ? Palette.green : Color(hex: 0x99FFFFFF)) }
+                            .font(.s(13)).opacity(0.6)
+                        if let r = remaining(e) { Text(r).font(.s(13)).foregroundStyle(e.finished ? Palette.green : Color(hex: 0x99FFFFFF)) }
                     }
                     .padding(.top, 4.dp)
                     if !e.live && e.duration != nil {
@@ -175,7 +175,7 @@ private struct HistoryRow: View {
                     }
                 }
                 Spacer(minLength: 0)
-                if !e.live { Text(e.resumable ? tr("Resume") : tr("Play")).font(font(14)).opacity(0.8) }
+                if !e.live { Text(e.resumable ? tr("Resume") : tr("Play")).font(.s(14)).opacity(0.8) }
             }
             if e.resumable { Pill(text: tr("Start over"), action: onRestart) }
             Pill(text: tr("Remove"), action: onRemove)
@@ -240,13 +240,13 @@ struct FavoritesView: View {
         let channels = favorites.filter { $0.group.style == "guide" }
         return VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 0) {
-                Text(tr("Favorites")).font(font(24, .bold))
-                Text("   " + tr("Shared with everyone in the room  ·  Hold OK: remove (channels: guide)")).font(font(15)).foregroundStyle(Palette.faint)
+                Text(tr("Favorites")).font(.s(24, .bold))
+                Text("   " + tr("Shared with everyone in the room  ·  Hold OK: remove (channels: guide)")).font(.s(15)).foregroundStyle(Palette.faint)
             }
             .padding(.leading, 12.dp).padding(.bottom, 14.dp)
             if favorites.isEmpty && reminders.isEmpty {
                 Text(tr("No favorites yet. Hold OK on anything to add it. New episodes of favorite series are marked here."))
-                    .font(font(16)).foregroundStyle(Palette.dim).padding(12.dp)
+                    .font(.s(16)).foregroundStyle(Palette.dim).padding(12.dp)
                 Spacer()
             } else {
                 ScrollView {
@@ -258,9 +258,9 @@ struct FavoritesView: View {
                                         PathIcon(path: AppIcon.bell, size: 22).foregroundStyle(Palette.gold)
                                         Spacer().frame(width: 14.dp)
                                         VStack(alignment: .leading) {
-                                            Text("\(dayLabel(r.start)) \(hhmm(r.start))").font(font(14, .bold)).foregroundStyle(Palette.gold)
-                                            Text(r.title).font(font(16, .medium)).lineLimit(1)
-                                            Text(r.channel.title + (r.addedBy.map { " · " + tr("by {name}", ["name": $0]) } ?? "")).font(font(13)).foregroundStyle(Palette.dim).lineLimit(1)
+                                            Text("\(dayLabel(r.start)) \(hhmm(r.start))").font(.s(14, .bold)).foregroundStyle(Palette.gold)
+                                            Text(r.title).font(.s(16, .medium)).lineLimit(1)
+                                            Text(r.channel.title + (r.addedBy.map { " · " + tr("by {name}", ["name": $0]) } ?? "")).font(.s(13)).foregroundStyle(Palette.dim).lineLimit(1)
                                         }
                                     }
                                     .frame(width: 380.dp)
@@ -319,8 +319,8 @@ struct FavoritesView: View {
         let inner = content()
         return VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 0) {
-                Text(title).font(font(20, .bold))
-                Text("  \(count)").font(font(20)).foregroundStyle(Palette.faint)
+                Text(title).font(.s(20, .bold))
+                Text("  \(count)").font(.s(20)).foregroundStyle(Palette.faint)
             }
             .padding(.leading, 12.dp).padding(.bottom, 8.dp)
             ScrollView(.horizontal, showsIndicators: false) {

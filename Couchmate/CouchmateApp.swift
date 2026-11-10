@@ -85,10 +85,10 @@ struct SetupView: View {
     var body: some View {
         HStack(alignment: .top, spacing: 48.dp) {
             VStack(alignment: .leading, spacing: 6.dp) {
-                (Text("Couch").foregroundStyle(Palette.text) + Text("mate").foregroundStyle(Palette.accent)).font(font(34, .bold))
-                Text(tr("Settings")).font(font(20)).foregroundStyle(Palette.dim)
+                (Text("Couch").foregroundStyle(Palette.text) + Text("mate").foregroundStyle(Palette.accent)).font(.s(34, .bold))
+                Text(tr("Settings")).font(.s(20)).foregroundStyle(Palette.dim)
                 Text(tr("Watch together with your friends, perfectly in sync. Everyone connected to the same server ends up in the same room."))
-                    .font(font(15)).foregroundStyle(Palette.dim).padding(.top, 22.dp)
+                    .font(.s(15)).foregroundStyle(Palette.dim).padding(.top, 22.dp)
             }
             .frame(width: 300.dp)
             SettingsForm(onSaved: { _ in onDone() }, onCancel: nil)
@@ -114,7 +114,7 @@ struct SettingsForm: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 28.dp) {
-                if let title { Text(title).font(font(26, .bold)) }
+                if let title { Text(title).font(.s(26, .bold)) }
                 section(tr("Connection"), tr("The address of your {app} server and the PIN code you were given.", ["app": appName])) {
                     HStack(spacing: 16.dp) {
                         field(tr("Server address"), $server, tr("e.g. 192.168.1.10:8787"), keyboard: .URL)
@@ -136,7 +136,7 @@ struct SettingsForm: View {
                         .disabled(testing || server.trimmingCharacters(in: .whitespaces).isEmpty || name.trimmingCharacters(in: .whitespaces).isEmpty)
                     if let onCancel { Button(tr("Cancel"), action: onCancel) }
                 }
-                if let status { Text(status).font(font(15)).foregroundStyle(Palette.error) }
+                if let status { Text(status).font(.s(15)).foregroundStyle(Palette.error) }
             }
             .padding(.horizontal, 36.dp).padding(.vertical, 30.dp)
         }
@@ -179,8 +179,8 @@ struct SettingsForm: View {
         let inner = content()
         return VStack(alignment: .leading, spacing: 12.dp) {
             VStack(alignment: .leading, spacing: 2.dp) {
-                Text(title).font(font(19, .semibold))
-                Text(description).font(font(14)).foregroundStyle(Palette.faint)
+                Text(title).font(.s(19, .semibold))
+                Text(description).font(.s(14)).foregroundStyle(Palette.faint)
             }
             inner
         }
@@ -188,13 +188,13 @@ struct SettingsForm: View {
 
     private func field(_ label: String, _ value: Binding<String>, _ hint: String, keyboard: UIKeyboardType = .default, secure: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: 6.dp) {
-            Text(label).font(font(14, .medium)).foregroundStyle(Palette.dim)
+            Text(label).font(.s(14, .medium)).foregroundStyle(Palette.dim)
             Group {
                 if secure { SecureField(hint, text: value) } else { TextField(hint, text: value).keyboardType(keyboard) }
             }
             .textInputAutocapitalization(.never)
             .autocorrectionDisabled()
-            .font(font(18))
+            .font(.s(18))
         }
     }
 }

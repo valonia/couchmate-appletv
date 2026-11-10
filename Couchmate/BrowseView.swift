@@ -100,7 +100,7 @@ struct SideNav: View {
             HStack(spacing: 12.dp) {
                 Image(systemName: "sofa.fill").font(.system(size: 30.dp)).foregroundStyle(Palette.accent).frame(width: 36.dp)
                 if expanded {
-                    (Text("Couch").foregroundStyle(Palette.text) + Text("mate").foregroundStyle(Palette.accent)).font(font(22, .bold))
+                    (Text("Couch").foregroundStyle(Palette.text) + Text("mate").foregroundStyle(Palette.accent)).font(.s(22, .bold))
                 }
             }
             .frame(height: 48.dp).padding(.leading, 10.dp).padding(.bottom, 14.dp)
@@ -131,7 +131,7 @@ struct SideNav: View {
                             ZStack(alignment: .bottomTrailing) {
                                 Avatar(name: sync.members[0].name, size: 30)
                                 if sync.members.count > 1 {
-                                    Text("\(sync.members.count)").font(font(10, .bold)).foregroundStyle(.white)
+                                    Text("\(sync.members.count)").font(.s(10, .bold)).foregroundStyle(.white)
                                         .padding(.horizontal, 5.dp).background(Capsule().fill(Palette.accent)).offset(x: 6.dp, y: 4.dp)
                                 }
                             }
@@ -140,7 +140,7 @@ struct SideNav: View {
                     .frame(width: 32.dp, alignment: .leading)
                     if expanded {
                         Text(!sync.connected ? (sync.error ?? tr("Connecting…")) : sync.members.isEmpty ? tr("Connected") : viewersText(sync.members))
-                            .font(font(14)).lineLimit(1)
+                            .font(.s(14)).lineLimit(1)
                     }
                     Spacer(minLength: 0)
                 }
@@ -171,11 +171,11 @@ struct SideNav: View {
                 }
                 if expanded {
                     VStack(alignment: .leading, spacing: 0) {
-                        if let sublabel { Text(sublabel.uppercased()).font(font(10, .bold)).tracking(1.dp).foregroundStyle(Palette.accent) }
-                        Text(label).font(font(17, isSelected ? .semibold : .medium)).lineLimit(1)
+                        if let sublabel { Text(sublabel.uppercased()).font(.s(10, .bold)).tracking(1.dp).foregroundStyle(Palette.accent) }
+                        Text(label).font(.s(17, isSelected ? .semibold : .medium)).lineLimit(1)
                     }
                     if let badge {
-                        Text(badge).font(font(11, .bold)).foregroundStyle(.white).padding(.horizontal, 7.dp).padding(.vertical, 1.dp).background(Capsule().fill(Palette.live))
+                        Text(badge).font(.s(11, .bold)).foregroundStyle(.white).padding(.horizontal, 7.dp).padding(.vertical, 1.dp).background(Capsule().fill(Palette.live))
                     }
                 }
                 Spacer(minLength: 0)
@@ -200,9 +200,9 @@ struct MembersPanel: View {
         HStack(spacing: 0) {
             Color(hex: 0x99000000)
             VStack(alignment: .leading, spacing: 0) {
-                Text(tr("{n} connected", ["n": members.count])).font(font(22, .bold))
+                Text(tr("{n} connected", ["n": members.count])).font(.s(22, .bold))
                 Text(playing.map { tr("Watching {title}", ["title": $0]) } ?? tr("Nothing is playing right now"))
-                    .font(font(14)).foregroundStyle(Palette.faint).lineLimit(1).padding(.top, 2.dp).padding(.bottom, 16.dp)
+                    .font(.s(14)).foregroundStyle(Palette.faint).lineLimit(1).padding(.top, 2.dp).padding(.bottom, 16.dp)
                 ScrollView {
                     VStack(spacing: 2.dp) {
                         ForEach(sorted) { m in
@@ -210,17 +210,17 @@ struct MembersPanel: View {
                                 Avatar(name: m.name, size: 34)
                                 Spacer().frame(width: 14.dp)
                                 VStack(alignment: .leading) {
-                                    Text(m.name).font(font(17, .medium)).lineLimit(1)
-                                    if !m.device.isEmpty { Text(m.device).font(font(13)).opacity(0.6).lineLimit(1) }
+                                    Text(m.name).font(.s(17, .medium)).lineLimit(1)
+                                    if !m.device.isEmpty { Text(m.device).font(.s(13)).opacity(0.6).lineLimit(1) }
                                 }
                                 Spacer(minLength: 0)
-                                Text(m.watching ? tr("Watching") : tr("In the menu")).font(font(13)).foregroundStyle(m.watching ? Palette.green : Color(hex: 0x99FFFFFF))
+                                Text(m.watching ? tr("Watching") : tr("In the menu")).font(.s(13)).foregroundStyle(m.watching ? Palette.green : Color(hex: 0x99FFFFFF))
                             }
                         }
                     }
                 }
                 Spacer(minLength: 0)
-                Text(tr("Menu  –  close")).font(font(13)).foregroundStyle(Palette.faint)
+                Text(tr("Menu  –  close")).font(.s(13)).foregroundStyle(Palette.faint)
             }
             .padding(EdgeInsets(top: 32.dp, leading: 24.dp, bottom: 24.dp, trailing: 24.dp))
             .frame(width: 460.dp)

@@ -30,6 +30,7 @@ final class DataLoader: ObservableObject {
     }
 }
 
+@MainActor
 private func dataKey(_ ctx: ViewContext, _ spec: JSON) -> (String, [String: String]) {
     let params = ctx.params(spec.obj("params"))
     return (spec.string("name") + "|" + params.sorted { $0.key < $1.key }.map { "\($0.key)=\($0.value)" }.joined(separator: "&"), params)
@@ -138,7 +139,7 @@ func drawBlock(_ ctx: ViewContext, _ node: JSON, fill: Fill) -> AnyView {
         if t.isEmpty { return AnyView(EmptyView()) }
         skipPadding = true
         let pad = paddingOf(node["padding"]) ?? EdgeInsets()
-        view = AnyView(Text(t).font(font(node.double("size") ?? 11, .bold))
+        view = AnyView(Text(t).font(.s(node.double("size") ?? 11, .bold))
             .foregroundStyle(colorOf(ctx.string(node["textColor"]).nilIfEmpty, .white))
             .padding(.horizontal, 6.dp).padding(.vertical, 1.dp)
             .background(RoundedRectangle(cornerRadius: 4.dp).fill(colorOf(ctx.string(node["color"]).nilIfEmpty, Palette.live)))
@@ -260,7 +261,7 @@ struct StyledText: View {
             let explicit = ctx.string(node["color"]).nilIfEmpty
             let size = node.double("size") ?? st.size
             let base = Text(st.upper ? text.uppercased() : text)
-                .font(font(size, node.bool("bold") ? .bold : st.weight))
+                .font(.s(size, node.bool("bold") ? .bold : st.weight))
                 .tracking(st.spacing.dp)
             let lines = node.int("maxLines")
             Group {
@@ -366,7 +367,7 @@ struct ListBlock: View {
                 LazyVStack(alignment: .leading, spacing: gap) {
                     ForEach(entries) { e in
                         if let h = e.heading {
-                            Text(h.uppercased()).font(font(12, .bold)).tracking(1.dp).foregroundStyle(Palette.faint)
+                            Text(h.uppercased()).font(.s(12, .bold)).tracking(1.dp).foregroundStyle(Palette.faint)
                                 .padding(.leading, 6.dp).padding(.top, 10.dp).padding(.bottom, 4.dp)
                         } else {
                             item(e)
@@ -445,10 +446,10 @@ private struct ItemBox: View {
                         .aspectRatio(CGFloat(node.double("aspect") ?? 2.0 / 3.0), contentMode: .fit)
                 }
                 if let sub = ctx.string(node["sublabel"]).nilIfEmpty {
-                    Text(sub).font(font(12, .semibold)).foregroundStyle(Palette.accent).lineLimit(1).padding(.top, 6.dp).padding(.leading, 2.dp)
+                    Text(sub).font(.s(12, .semibold)).foregroundStyle(Palette.accent).lineLimit(1).padding(.top, 6.dp).padding(.leading, 2.dp)
                 }
                 if let label = ctx.string(node["label"]).nilIfEmpty {
-                    Text(cleanTitle(label)).font(font(13)).foregroundStyle(Palette.dim).lineLimit(1).padding(.top, 6.dp).padding(.horizontal, 2.dp)
+                    Text(cleanTitle(label)).font(.s(13)).foregroundStyle(Palette.dim).lineLimit(1).padding(.top, 6.dp).padding(.horizontal, 2.dp)
                 }
             }
             .frame(width: width)

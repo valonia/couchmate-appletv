@@ -20,14 +20,14 @@ struct LandscapeCard: View {
                     HStack(spacing: 6.dp) {
                         if item.live { LiveBadge() }
                         if let v = item.viewers {
-                            Text(tr("{n} viewers", ["n": compact(v)])).font(font(11)).foregroundStyle(.white)
+                            Text(tr("{n} viewers", ["n": compact(v)])).font(.s(11)).foregroundStyle(.white)
                                 .padding(.horizontal, 6.dp).padding(.vertical, 1.dp)
                                 .background(RoundedRectangle(cornerRadius: 4.dp).fill(Color(hex: 0xB3000000)))
                         }
                     }
                     .padding(8.dp)
                     if favorite {
-                        Text("★").font(font(15)).foregroundStyle(Palette.gold)
+                        Text("★").font(.s(15)).foregroundStyle(Palette.gold)
                             .padding(.horizontal, 7.dp).padding(.vertical, 2.dp)
                             .background(Capsule().fill(Color(hex: 0xB30A0C10)))
                             .padding(6.dp)
@@ -38,8 +38,8 @@ struct LandscapeCard: View {
                 // Streams: the channel above the stream's title; anything else: the title above its subtitle.
                 let pair: (String, String?) = item.live && item.subtitle != nil ? (item.subtitle!, item.title) : (item.title, item.subtitle)
                 VStack(alignment: .leading, spacing: 2.dp) {
-                    Text(pair.0).font(font(15, .semibold)).lineLimit(1)
-                    Text(pair.1 ?? " ").font(font(13)).lineLimit(2)
+                    Text(pair.0).font(.s(15, .semibold)).lineLimit(1)
+                    Text(pair.1 ?? " ").font(.s(13)).lineLimit(2)
                 }
                 .padding(.horizontal, 12.dp).padding(.vertical, 10.dp)
             }
@@ -67,14 +67,14 @@ struct PosterCard: View {
                 ZStack {
                     Thumb(url: image, fallback: title, fit: false, corner: 8)
                     if favorite {
-                        Text("★").font(font(15)).foregroundStyle(Palette.gold)
+                        Text("★").font(.s(15)).foregroundStyle(Palette.gold)
                             .padding(.horizontal, 7.dp).padding(.vertical, 2.dp)
                             .background(Capsule().fill(Color(hex: 0xB30A0C10)))
                             .padding(6.dp)
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                     }
                     if newCount > 0 {
-                        Text(newCount == 1 ? tr("NEW") : tr("{n} NEW", ["n": newCount])).font(font(11, .bold)).foregroundStyle(.white)
+                        Text(newCount == 1 ? tr("NEW") : tr("{n} NEW", ["n": newCount])).font(.s(11, .bold)).foregroundStyle(.white)
                             .padding(.horizontal, 6.dp).padding(.vertical, 2.dp)
                             .background(RoundedRectangle(cornerRadius: 4.dp).fill(Palette.accent))
                             .padding(6.dp)
@@ -86,9 +86,9 @@ struct PosterCard: View {
             .buttonStyle(FocusStyle(look: .poster))
             .onLongPress(onLongPress)
             if let caption {
-                Text(caption).font(font(12, .semibold)).foregroundStyle(Palette.accent).lineLimit(1).padding(.top, 6.dp)
+                Text(caption).font(.s(12, .semibold)).foregroundStyle(Palette.accent).lineLimit(1).padding(.top, 6.dp)
             }
-            Text(title).font(font(13)).foregroundStyle(Palette.dim).lineLimit(1).padding(.top, 6.dp)
+            Text(title).font(.s(13)).foregroundStyle(Palette.dim).lineLimit(1).padding(.top, 6.dp)
         }
         .frame(width: width.dp)
     }
@@ -106,11 +106,11 @@ struct ChannelCard: View {
             Thumb(url: api.abs(item.image), fallback: item.title).frame(width: 80.dp, height: 46.dp)
             Spacer().frame(width: 14.dp)
             VStack(alignment: .leading) {
-                Text(item.title).font(font(16, .medium)).lineLimit(1)
-                if let s = item.subtitle { Text(s).font(font(13)).foregroundStyle(Palette.dim).lineLimit(1) }
+                Text(item.title).font(.s(16, .medium)).lineLimit(1)
+                if let s = item.subtitle { Text(s).font(.s(13)).foregroundStyle(Palette.dim).lineLimit(1) }
             }
             Spacer(minLength: 0)
-            if favorite { Text("★").font(font(15)).foregroundStyle(Palette.gold) }
+            if favorite { Text("★").font(.s(15)).foregroundStyle(Palette.gold) }
         }
         .frame(width: 300.dp)
         .background(RoundedRectangle(cornerRadius: 8.dp).fill(Palette.panel))
@@ -150,8 +150,8 @@ struct CardRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 0) {
-                Text(title).font(font(20, .bold))
-                Text("  \(row.items.count)").font(font(20)).foregroundStyle(Palette.faint)
+                Text(title).font(.s(20, .bold))
+                Text("  \(row.items.count)").font(.s(20)).foregroundStyle(Palette.faint)
             }
             .padding(.leading, 12.dp).padding(.bottom, 8.dp)
             ScrollView(.horizontal, showsIndicators: false) {

@@ -15,17 +15,17 @@ struct ChannelRow: View {
     var body: some View {
         let prog = epg?.now(now)
         FocusRow(selected: playing, height: 64, onFocus: onFocus, onLongPress: onLongPress, action: onClick) {
-            Text(item.number.map(String.init) ?? "").font(font(15)).foregroundStyle(Palette.dim).frame(width: 48.dp, alignment: .leading)
+            Text(item.number.map(String.init) ?? "").font(.s(15)).foregroundStyle(Palette.dim).frame(width: 48.dp, alignment: .leading)
             Thumb(url: iconUrl, fallback: item.title).frame(width: 64.dp, height: 38.dp)
             Spacer().frame(width: 14.dp)
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 8.dp) {
-                    Text(item.title).font(font(17, .medium)).lineLimit(1)
-                    if favorite { Text("★").font(font(14)).foregroundStyle(Palette.gold) }
-                    if playing { Text("▶").font(font(13)) }
+                    Text(item.title).font(.s(17, .medium)).lineLimit(1)
+                    if favorite { Text("★").font(.s(14)).foregroundStyle(Palette.gold) }
+                    if playing { Text("▶").font(.s(13)) }
                 }
                 if let prog {
-                    Text("\(hhmm(prog.start))  \(prog.title)").font(font(14)).opacity(0.7).lineLimit(1)
+                    Text("\(hhmm(prog.start))  \(prog.title)").font(.s(14)).opacity(0.7).lineLimit(1)
                     ProgressLine(fraction: prog.progress(now), color: Color(hex: 0xCCFFFFFF), track: Color(hex: 0x22FFFFFF)).padding(.top, 4.dp)
                 }
             }
@@ -50,16 +50,16 @@ struct ChannelGuide: View {
                 Thumb(url: api.abs(item.image), fallback: item.title, corner: 8).frame(width: 120.dp, height: 68.dp)
                 VStack(alignment: .leading) {
                     HStack(spacing: 8.dp) {
-                        if let n = item.number { Text("\(n)").font(font(16)).foregroundStyle(Palette.dim) }
+                        if let n = item.number { Text("\(n)").font(.s(16)).foregroundStyle(Palette.dim) }
                         LiveBadge()
                     }
-                    Text(item.title).font(font(21, .bold)).lineLimit(2)
+                    Text(item.title).font(.s(21, .bold)).lineLimit(2)
                 }
             }
             .padding(.bottom, 14.dp)
             let programs = (guide ?? shortEpg ?? []).filter { $0.end > now }
             if programs.isEmpty {
-                Text(tr("No programme information")).font(font(16)).foregroundStyle(Palette.faint)
+                Text(tr("No programme information")).font(.s(16)).foregroundStyle(Palette.faint)
                 Spacer()
             } else {
                 ScrollView {
@@ -94,25 +94,25 @@ private struct GuideRow: View {
         let live = p.isNow(now)
         FocusRow(selected: live || reminder != nil, height: 64, action: onClick) {
             VStack(alignment: .leading) {
-                Text(hhmm(p.start)).font(font(16, .bold))
-                Text("– \(hhmm(p.end))").font(font(12)).foregroundStyle(Palette.faint)
+                Text(hhmm(p.start)).font(.s(16, .bold))
+                Text("– \(hhmm(p.end))").font(.s(12)).foregroundStyle(Palette.faint)
             }
             .frame(width: 70.dp, alignment: .leading)
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 8.dp) {
                     if live {
-                        Text(tr("ON NOW")).font(font(10, .bold)).foregroundStyle(.white)
+                        Text(tr("ON NOW")).font(.s(10, .bold)).foregroundStyle(.white)
                             .padding(.horizontal, 6.dp).padding(.vertical, 1.dp)
                             .background(RoundedRectangle(cornerRadius: 4.dp).fill(Palette.live))
                     }
-                    Text(p.title).font(font(15, .medium)).lineLimit(1)
+                    Text(p.title).font(.s(15, .medium)).lineLimit(1)
                 }
                 if live {
                     ProgressLine(fraction: p.progress(now)).padding(.top, 6.dp)
                 } else if let r = reminder {
-                    Text(r.addedBy.map { tr("Reminder · by {name}", ["name": $0]) } ?? tr("Reminder")).font(font(12)).foregroundStyle(Palette.gold).lineLimit(1)
+                    Text(r.addedBy.map { tr("Reminder · by {name}", ["name": $0]) } ?? tr("Reminder")).font(.s(12)).foregroundStyle(Palette.gold).lineLimit(1)
                 } else if let d = p.description {
-                    Text(d).font(font(12)).foregroundStyle(Palette.dim).lineLimit(1)
+                    Text(d).font(.s(12)).foregroundStyle(Palette.dim).lineLimit(1)
                 }
             }
             Spacer(minLength: 0)
@@ -139,9 +139,9 @@ struct ReminderCard: View {
             }
             .frame(width: 48.dp, height: 48.dp)
             VStack(alignment: .leading, spacing: 0) {
-                Text(tr("REMINDER  ·  SWITCHING CHANNEL IN {n} S", ["n": secondsLeft])).font(font(12, .bold)).tracking(1.dp).foregroundStyle(Palette.gold)
-                Text(reminder.title).font(font(18, .semibold)).lineLimit(1).padding(.top, 4.dp)
-                Text(tr("Starts {time} on {channel}", ["time": hhmm(reminder.start), "channel": reminder.channelTitle])).font(font(15)).foregroundStyle(Palette.dim).lineLimit(1)
+                Text(tr("REMINDER  ·  SWITCHING CHANNEL IN {n} S", ["n": secondsLeft])).font(.s(12, .bold)).tracking(1.dp).foregroundStyle(Palette.gold)
+                Text(reminder.title).font(.s(18, .semibold)).lineLimit(1).padding(.top, 4.dp)
+                Text(tr("Starts {time} on {channel}", ["time": hhmm(reminder.start), "channel": reminder.channelTitle])).font(.s(15)).foregroundStyle(Palette.dim).lineLimit(1)
                 if interactive {
                     HStack(spacing: 8.dp) {
                         Pill(text: tr("Switch now"), selected: true, action: onNow)
@@ -149,7 +149,7 @@ struct ReminderCard: View {
                     }
                     .padding(.top, 10.dp)
                 } else {
-                    Text(tr("OK switch now   ·   Menu cancel")).font(font(13)).foregroundStyle(Palette.faint).padding(.top, 10.dp)
+                    Text(tr("OK switch now   ·   Menu cancel")).font(.s(13)).foregroundStyle(Palette.faint).padding(.top, 10.dp)
                 }
             }
         }

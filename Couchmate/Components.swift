@@ -138,7 +138,7 @@ struct Pill: View {
     var body: some View {
         Button(action: action) {
             Text(text)
-                .font(font(16, selected ? .semibold : .regular))
+                .font(.s(16, selected ? .semibold : .regular))
                 .lineLimit(1)
                 .padding(.horizontal, 14.dp)
                 .padding(.vertical, 8.dp)
@@ -195,11 +195,11 @@ struct Thumb: View {
                 }
             } else if fit {
                 Text(String(fallback.filter { $0.isLetter || $0.isNumber }.prefix(2)).uppercased())
-                    .font(font(14, .bold)).foregroundStyle(Palette.faint)
+                    .font(.s(14, .bold)).foregroundStyle(Palette.faint)
             } else {
                 LinearGradient(colors: [Palette.panelHi, Color(hex: 0xFF232A38)], startPoint: .top, endPoint: .bottom)
                 Text(cleanTitle(fallback))
-                    .font(font(15, .semibold)).foregroundStyle(Palette.dim)
+                    .font(.s(15, .semibold)).foregroundStyle(Palette.dim)
                     .multilineTextAlignment(.center).lineLimit(5).padding(10.dp)
             }
         }
@@ -233,7 +233,7 @@ struct ProgressLine: View {
 
 struct LiveBadge: View {
     var body: some View {
-        Text("LIVE").font(font(11, .bold)).foregroundStyle(.white)
+        Text("LIVE").font(.s(11, .bold)).foregroundStyle(.white)
             .padding(.horizontal, 6.dp).padding(.vertical, 1.dp)
             .background(RoundedRectangle(cornerRadius: 4.dp).fill(Palette.live))
     }
@@ -263,7 +263,7 @@ struct ClockView: View {
     var size: Double = 22
     var body: some View {
         TimelineView(.periodic(from: .now, by: 5)) { ctx in
-            Text(hhmm(Int64(ctx.date.timeIntervalSince1970))).font(font(size, .light)).foregroundStyle(Palette.text).lineLimit(1)
+            Text(hhmm(Int64(ctx.date.timeIntervalSince1970))).font(.s(size, .light)).foregroundStyle(Palette.text).lineLimit(1)
         }
     }
 }
@@ -315,7 +315,7 @@ struct ViewersChip: View {
                 HStack(spacing: -8.dp) { ForEach(members.prefix(3)) { Avatar(name: $0.name, size: 26) } }
             }
             Text(!connected ? (error ?? tr("Connecting…")) : members.isEmpty ? tr("Connected") : viewersText(members))
-                .font(font(14)).foregroundStyle(Palette.dim).lineLimit(1).frame(maxWidth: 220.dp, alignment: .leading)
+                .font(.s(14)).foregroundStyle(Palette.dim).lineLimit(1).frame(maxWidth: 220.dp, alignment: .leading)
         }
         .padding(.leading, 6.dp).padding(.trailing, 14.dp).padding(.vertical, 4.dp)
         .background(Capsule().fill(Palette.panel))
@@ -326,7 +326,7 @@ struct Message: View {
     let text: String
     var error = false
     var body: some View {
-        Text(text).font(font(16)).foregroundStyle(error ? Palette.error : Palette.dim).padding(20.dp)
+        Text(text).font(.s(16)).foregroundStyle(error ? Palette.error : Palette.dim).padding(20.dp)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
@@ -334,7 +334,7 @@ struct Message: View {
 struct SectionLabel: View {
     let text: String
     var body: some View {
-        Text(text.uppercased()).font(font(12, .bold)).tracking(1.5.dp).foregroundStyle(Palette.faint)
+        Text(text.uppercased()).font(.s(12, .bold)).tracking(1.5.dp).foregroundStyle(Palette.faint)
     }
 }
 
@@ -360,7 +360,7 @@ struct NoticeToast: View {
     var body: some View {
         Group {
             if let v = visible {
-                Text(v).font(font(16)).foregroundStyle(Palette.text).lineLimit(2)
+                Text(v).font(.s(16)).foregroundStyle(Palette.text).lineLimit(2)
                     .padding(.horizontal, 22.dp).padding(.vertical, 10.dp)
                     .background(Capsule().fill(Color(hex: 0xF21A1F29)))
                     .transition(.opacity)
