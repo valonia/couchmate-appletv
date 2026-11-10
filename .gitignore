@@ -1,0 +1,9 @@
+Pods/
+*.xcodeproj
+*.xcworkspace
+xcuserdata/
+DerivedData/
+build/
+out/
+Couchmate/Info.plist
+.DS_Store
