@@ -132,7 +132,7 @@ final class PlaybackSync: ObservableObject {
             mutedForLoad = !media.live
             if mutedForLoad { setVolume(0) }
             // Joining in the middle of a movie starts right where the others are.
-            load(url, audio: audioURL(media, url), startAt: media.live ? nil : target(st, sync) + (st.paused ? 0 : seekLead))
+            load(url, audio: audioURL(media, url), live: media.live, startAt: media.live ? nil : target(st, sync) + (st.paused ? 0 : seekLead))
             lastSeekAt = now
             cooldownUntil = now + 2
             return
@@ -142,7 +142,7 @@ final class PlaybackSync: ObservableObject {
             status = tr("Playback error – retrying…")
             if now - errorAt > 3 {
                 errorAt = now
-                load(url, audio: audioURL(media, url), startAt: media.live ? nil : target(st, sync))
+                load(url, audio: audioURL(media, url), live: media.live, startAt: media.live ? nil : target(st, sync))
             }
             return
         }
@@ -170,7 +170,7 @@ final class PlaybackSync: ObservableObject {
             // Back to live when someone presses play again.
             livePaused = false
             let url = urlFor(media)
-            load(url, audio: audioURL(media, url), startAt: nil)
+            load(url, audio: audioURL(media, url), live: true, startAt: nil)
             return
         }
         if !player.isPlaying && player.state != .opening && player.state != .buffering { player.play() }
@@ -203,7 +203,12 @@ final class PlaybackSync: ObservableObject {
             if st.waiting {
                 status = tr("Waiting for everyone to be ready…")
                 let positioned = abs(pos - st.position) < 1.5 || now - lastSeekAt > 2.5
-                if readyVersion != st.version, player.state == .paused, positioned, now - lastSeekAt > 0.5 {
+                // VLC often stays in "buffering" after a seek or load while paused and never says "paused" – so
+                // ready means: the file is open (its length is known), it is not playing and it is in place.
+                // (Only waiting for .paused left the others waiting until the server's time limit.)
+                let opened = player.state != .opening && player.state != .stopped && player.state != .error
+                let loaded = opened && (durationSec > 0 || now - lastSeekAt > 3)
+                if readyVersion != st.version, loaded, !player.isPlaying, positioned, now - lastSeekAt > 0.5 {
                     sync.ready(st.version, duration: durationSec)
                     readyVersion = st.version
                 }
@@ -269,10 +274,13 @@ final class PlaybackSync: ObservableObject {
         return st.position + Double(max(0, sync.serverNow() - st.refTime)) / 1000
     }
 
-    private func load(_ urlString: String, audio: String?, startAt: Double?) {
+    private func load(_ urlString: String, audio: String?, live: Bool, startAt: Double?) {
         guard let url = URL(string: urlString) else { return }
         let media = VLCMedia(url: url)
-        media.addOption(":network-caching=1500")
+        // Live TV gets a bigger buffer (fewer stutters; nobody notices a few seconds on live). Films and episodes
+        // keep a small one so starting and seeking stay quick. (For network streams this is the setting that counts –
+        // :live-caching is only for capture devices.)
+        media.addOption(live ? ":network-caching=3000" : ":network-caching=1500")
         // Video and audio as two files (e.g. YouTube in HD) – played together.
         if let audio { media.addOption(":input-slave=\(audio)") }
         if let s = startAt, s > 0 { media.addOption(String(format: ":start-time=%.2f", s)) }
