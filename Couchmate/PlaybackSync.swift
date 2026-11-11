@@ -15,8 +15,16 @@ final class PlaybackSync: ObservableObject {
     var active = true
     /// The address that is played (the plugin's own player choices are added to it).
     var urlFor: (Media) -> String = { $0.url }
+    /// The captions to show with it (WebVTT), when CC is on and the plugin has them – else nil.
+    var captionsFor: (Media, String) -> String? = { _, _ in nil }
+
+    /// CC was switched on or off: load the one that plays again (with or without captions) where the room is.
+    func reloadCaptions() { loadedURL = nil }
 
     private var loadedURL: String?
+    /// Captions to add once the video has opened (VLC only takes them then), and whether this video has them.
+    private var pendingCaptions: String?
+    private var captionsOn = false
     private var seekedVersion = -1
     private var readyVersion = -1
     private var reportedDuration: String?
@@ -92,7 +100,11 @@ final class PlaybackSync: ObservableObject {
     /// The saved choices, once a new video has opened.
     private func applyTrackPrefs() {
         let p = Prefs.shared
-        if p.subLang == "off" { player.currentVideoSubTitleIndex = -1 }
+        if captionsOn {
+            // CC: the plugin's captions, whatever the saved subtitle choice is.
+            if let c = pendingCaptions, let u = URL(string: c) { player.addPlaybackSlave(u, type: .subtitle, enforce: true) }
+            pendingCaptions = nil
+        } else if p.subLang == "off" { player.currentVideoSubTitleIndex = -1 }
         else if !p.subLang.isEmpty, let t = subtitleTracks.first(where: { $0.name == p.subLang }) { player.currentVideoSubTitleIndex = t.id }
         if !p.audioLang.isEmpty, let t = audioTracks.first(where: { $0.name == p.audioLang }) { player.currentAudioTrackIndex = t.id }
         tracksVersion += 1
@@ -131,6 +143,8 @@ final class PlaybackSync: ObservableObject {
             player.rate = 1
             mutedForLoad = !media.live
             if mutedForLoad { setVolume(0) }
+            pendingCaptions = captionsFor(media, url)
+            captionsOn = pendingCaptions != nil
             // Joining in the middle of a movie starts right where the others are.
             load(url, audio: audioURL(media, url), live: media.live, startAt: media.live ? nil : target(st, sync) + (st.paused ? 0 : seekLead))
             lastSeekAt = now

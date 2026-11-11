@@ -112,6 +112,7 @@ struct PlayerView: View {
         .onAppear {
             sync.setWatching(true)
             controller.urlFor = { m in urlFor(m) }
+            controller.captionsFor = { m, url in captionsFor(m, url) }
         }
         .onDisappear {
             sync.setWatching(false)
@@ -266,6 +267,18 @@ struct PlayerView: View {
         return s.defaultValue
     }
 
+    /// CC on: the plugin's captions in the app's language (it picks the best it has).
+    private func captionsFor(_ m: Media, _ url: String) -> String? {
+        guard m.captions, Prefs.shared.cc else { return nil }
+        return url + (url.contains("?") ? "&" : "?") + "part=captions&lang=" + (I18n.shared.lang ?? "en")
+    }
+
+    private func toggleCaptions() {
+        Prefs.shared.cc.toggle()
+        controller.reloadCaptions()
+        optVersion += 1
+    }
+
     private func urlFor(_ m: Media) -> String {
         let choices = m.player?.settings.filter { $0.type == "choice" } ?? []
         if choices.isEmpty { return m.url }
@@ -297,6 +310,14 @@ struct PlayerView: View {
                     var opts = [TrackOption(label: tr("Off"), selected: controller.currentSubtitle < 0) { controller.setSubtitle(nil) }]
                     opts += tracks.map { t in TrackOption(label: t.name, selected: t.id == controller.currentSubtitle) { controller.setSubtitle(t) } }
                     out.append((s.title ?? tr("Subtitles"), opts))
+                }
+            case "captions":
+                if m?.captions == true {
+                    let on = Prefs.shared.cc
+                    out.append((s.title ?? "CC", [
+                        TrackOption(label: tr("Off"), selected: !on) { if on { toggleCaptions() } },
+                        TrackOption(label: tr("On"), selected: on) { if !on { toggleCaptions() } },
+                    ]))
                 }
             case "choice":
                 if let m {

@@ -189,7 +189,7 @@ final class SyncClient: ObservableObject {
         Media(
             plugin: j.string("plugin"), id: j.string("id"), kind: j.str("kind"), title: j.string("title"), subtitle: j.str("subtitle"),
             image: j.str("image"), live: j.bool("live"), url: api.abs(j.str("url")) ?? j.string("url"), type: j.str("type") ?? "file",
-            audio: j.bool("audio"), chat: j.bool("chat"), player: j.obj("player").map(parsePlayerSpec)
+            audio: j.bool("audio"), captions: j.bool("captions"), chat: j.bool("chat"), player: j.obj("player").map(parsePlayerSpec)
         )
     }
 

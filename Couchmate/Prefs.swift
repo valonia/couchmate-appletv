@@ -13,6 +13,8 @@ final class Prefs {
     /// Subtitle language ("off" = off, "" = the file's default) and audio language – this TV only.
     var subLang: String { get { d.string(forKey: "subLang") ?? "" } set { d.set(newValue, forKey: "subLang") } }
     var audioLang: String { get { d.string(forKey: "audioLang") ?? "" } set { d.set(newValue, forKey: "audioLang") } }
+    /// CC: the captions a plugin gives (e.g. YouTube) – on or off for everything, this TV only.
+    var cc: Bool { get { d.bool(forKey: "cc") } set { d.set(newValue, forKey: "cc") } }
     /// Live streams: show the chat.
     var chatOn: Bool { get { d.bool(forKey: "chatOn") } set { d.set(newValue, forKey: "chatOn") } }
     /// A plugin's own player choices (type "choice"), per plugin and choice.

@@ -193,6 +193,8 @@ struct Media {
     let type: String
     /// The video has a separate audio file (same address with part=audio) that plays together with it.
     let audio: Bool
+    /// The plugin has captions for it (same address with part=captions) – shown when CC is on on this TV.
+    var captions: Bool = false
     let chat: Bool
     let player: PlayerSpec?
     var key: String { "\(plugin):\(id)" }
