@@ -423,15 +423,26 @@ private struct ItemBox: View {
     let onLongPress: (() -> Void)?
     @FocusState private var focused: Bool
 
+    /// The row's own buttons that show for this item.
+    private var rowButtons: [JSON] {
+        (node.arr("buttons") ?? []).compactMap { $0 as? JSON }.filter { ctx.visible($0) }
+    }
+
     var body: some View {
         let width = dpOf(node["itemWidth"])
         let height = dpOf(node["itemHeight"])
         switch style {
         case "row":
-            button(.row) {
-                BlockView(ctx, template, fill: .width)
-                    .padding(.horizontal, 14.dp)
-                    .frame(maxWidth: .infinity, minHeight: height ?? 56.dp, maxHeight: height ?? 56.dp, alignment: .leading)
+            HStack(spacing: 8.dp) {
+                button(.row) {
+                    BlockView(ctx, template, fill: .width)
+                        .padding(.horizontal, 14.dp)
+                        .frame(maxWidth: .infinity, minHeight: height ?? 56.dp, maxHeight: height ?? 56.dp, alignment: .leading)
+                }
+                // "buttons": buttons of the row's own next to it (each with "text", "onClick", "when"), e.g. "Start over".
+                ForEach(Array(rowButtons.enumerated()), id: \.offset) { _, b in
+                    Pill(text: ctx.string(b["text"]), selected: false) { ctx.run(b["onClick"]) }
+                }
             }
         case "card":
             button(.card) {
