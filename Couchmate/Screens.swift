@@ -29,6 +29,14 @@ struct SearchView: View {
                 Text(statusText(sections.isEmpty))
                     .font(.s(14)).foregroundStyle(error != nil ? Palette.error : Palette.faint)
                     .padding(.leading, 28.dp).padding(.top, 4.dp).padding(.bottom, 8.dp)
+                // The first search on its way: rows of grey cards where the results will be.
+                if loading && sections.isEmpty {
+                    VStack(alignment: .leading, spacing: 26.dp) {
+                        SkeletonCards(width: 260)
+                        SkeletonCards(width: 260)
+                    }
+                    .padding(.leading, 28.dp).padding(.top, 8.dp)
+                }
                 if !sections.isEmpty {
                     let several = (result ?? []).count > 1
                     ScrollView {
@@ -120,7 +128,7 @@ struct HistoryView: View {
             } else if let error {
                 Message(text: tr("Error: {message}", ["message": error]), error: true)
             } else {
-                Message(text: tr("Loading…"))
+                SkeletonRows(height: 92)
             }
             Spacer(minLength: 0)
         }

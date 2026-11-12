@@ -312,7 +312,7 @@ struct ChannelPanel: View {
                 }
                 .padding(.leading, 14.dp)
                 if channels.isEmpty {
-                    Text(tr("Loading channels…")).foregroundStyle(Palette.dim).padding(14.dp)
+                    SkeletonRows(count: 9, height: 64)
                 } else {
                     ScrollViewReader { proxy in
                         ScrollView {

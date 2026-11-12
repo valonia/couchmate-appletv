@@ -80,7 +80,7 @@ private struct DataBlock: View {
             } else if loader.value == nil, let e = loader.error {
                 Message(text: tr("Error: {message}", ["message": e]), error: true)
             } else {
-                Message(text: node.str("loading") ?? tr("Loading…"))
+                SkeletonLines()
             }
         }
         .task(id: key) {
@@ -306,7 +306,7 @@ struct ListBlock: View {
             if spec != nil && loader.value == nil && loader.error != nil {
                 Message(text: tr("Error: {message}", ["message": loader.error ?? ""]), error: true)
             } else if spec != nil && loader.loadedKey == nil {
-                Message(text: node.str("loading") ?? tr("Loading…"))
+                loadingSkeleton
             } else if shown.isEmpty {
                 if let e = node.str("empty") { Message(text: ctx.string(e)) } else { Color.clear.frame(height: 1) }
             } else {
@@ -324,6 +324,19 @@ struct ListBlock: View {
             var params = ctx.params(e.obj("params"))
             params["ids"] = ids.joined(separator: ",")
             await enrichLoader.run(ctx, name: e.string("name"), params: params, key: "enrich", delayMs: 0, refresh: e.int64("refresh"))
+        }
+    }
+
+    /// On its way: grey shapes like what is coming (rows, cards or posters).
+    @ViewBuilder private var loadingSkeleton: some View {
+        let style = node.str("focus") ?? "row"
+        if grid {
+            SkeletonGrid(aspect: CGFloat(node.double("aspect") ?? 2.0 / 3.0))
+        } else if node.str("direction") == "horizontal" {
+            SkeletonCards(width: CGFloat(node.double("itemWidth") ?? (style == "poster" ? 140 : 240)),
+                          aspect: style == "poster" ? CGFloat(node.double("aspect") ?? 2.0 / 3.0) : 16.0 / 9.0)
+        } else {
+            SkeletonRows(height: CGFloat(node.double("itemHeight") ?? 64))
         }
     }
 
@@ -530,7 +543,7 @@ struct ViewScreen: View {
             } else if let error {
                 Message(text: tr("Error: {message}", ["message": error]), error: true)
             } else {
-                Message(text: tr("Loading…"))
+                SkeletonPage()
             }
         }
         .task(id: "\(ref.key)|\(sync.textsVersion)|\(I18n.shared.lang ?? "")") { await load() }

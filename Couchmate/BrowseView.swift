@@ -73,7 +73,7 @@ struct BrowseView: View {
         } else if menu == nil, let menuError {
             Message(text: tr("Error: {message}", ["message": menuError]), error: true)
         } else if menu == nil {
-            Message(text: tr("Loading…"))
+            SkeletonPage()
         } else if !(menu ?? []).contains(where: { $0.plugin != nil }) {
             Message(text: tr("Nothing to watch yet. Switch on a plugin in the admin panel on the server."))
         }
