@@ -292,6 +292,9 @@ struct ListBlock: View {
     let grid: Bool
     @StateObject var loader = DataLoader()
     @StateObject var enrichLoader = DataLoader()
+    /// "autofocus" + "initial": the item to start on when the view opens (e.g. the episode to carry on with).
+    @Namespace private var focusNS
+    private var startId: String? { node.bool("autofocus") ? ctx.string(node["initial"]).nilIfEmpty : nil }
 
     var body: some View {
         let spec = node.obj("data")
@@ -363,20 +366,26 @@ struct ListBlock: View {
             }
             .scrollClipDisabled()
         } else {
-            ScrollView(.vertical, showsIndicators: false) {
-                LazyVStack(alignment: .leading, spacing: gap) {
-                    ForEach(entries) { e in
-                        if let h = e.heading {
-                            Text(h.uppercased()).font(.s(12, .bold)).tracking(1.dp).foregroundStyle(Palette.faint)
-                                .padding(.leading, 6.dp).padding(.top, 10.dp).padding(.bottom, 4.dp)
-                        } else {
-                            item(e)
+            ScrollViewReader { proxy in
+                ScrollView(.vertical, showsIndicators: false) {
+                    LazyVStack(alignment: .leading, spacing: gap) {
+                        ForEach(entries) { e in
+                            if let h = e.heading {
+                                Text(h.uppercased()).font(.s(12, .bold)).tracking(1.dp).foregroundStyle(Palette.faint)
+                                    .padding(.leading, 6.dp).padding(.top, 10.dp).padding(.bottom, 4.dp)
+                            } else {
+                                item(e).prefersDefaultFocus(e.id == startId, in: focusNS)
+                            }
                         }
                     }
+                    .padding(pad)
                 }
-                .padding(pad)
+                .scrollClipDisabled()
+                .focusScope(focusNS)
+                .onAppear {
+                    if let id = startId, entries.contains(where: { $0.id == id }) { proxy.scrollTo(id, anchor: .center) }
+                }
             }
-            .scrollClipDisabled()
         }
     }
 

@@ -8,6 +8,13 @@ final class Prefs {
     var serverUrl: String { get { d.string(forKey: "server") ?? "" } set { d.set(newValue, forKey: "server") } }
     var pin: String { get { d.string(forKey: "pin") ?? "" } set { d.set(newValue, forKey: "pin") } }
     var name: String { get { d.string(forKey: "name") ?? "" } set { d.set(newValue, forKey: "name") } }
+    /// A fixed id for this Apple TV (made once) – the server tells TVs apart by it, e.g. two with the same name.
+    var deviceId: String {
+        if let id = d.string(forKey: "deviceId") { return id }
+        let id = UUID().uuidString
+        d.set(id, forKey: "deviceId")
+        return id
+    }
     /// Language: "auto" (the TV's language) or "en".
     var language: String { get { d.string(forKey: "language") ?? "auto" } set { d.set(newValue, forKey: "language") } }
     /// Subtitle language ("off" = off, "" = the file's default) and audio language – this TV only.

@@ -46,7 +46,9 @@ struct RoomView: View {
         let p = Prefs.shared
         let api = Api(base: p.serverUrl, pin: p.pin)
         self.api = api
-        _sync = StateObject(wrappedValue: SyncClient(api: api, base: p.serverUrl, pin: p.pin, name: p.name))
+        let client = SyncClient(api: api, base: p.serverUrl, pin: p.pin, name: p.name)
+        client.onRenamed = { Prefs.shared.name = $0 }
+        _sync = StateObject(wrappedValue: client)
     }
 
     var body: some View {

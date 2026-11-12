@@ -8,7 +8,10 @@ final class SyncClient: ObservableObject {
     let api: Api
     private let base: String
     private let pin: String
-    private let name: String
+    /// The name this TV goes by – the admin can change it from the admin panel ("name" from the server).
+    private(set) var name: String
+    /// Called with the new name when the admin renames this TV – the app saves it in its settings.
+    var onRenamed: ((String) -> Void)?
     private let device: String
 
     private var task: URLSessionWebSocketTask?
@@ -69,7 +72,7 @@ final class SyncClient: ObservableObject {
         task = t
         t.resume()
         samples = []
-        send(["type": "hello", "name": name, "device": device, "lang": I18n.shared.lang ?? "en"])
+        send(["type": "hello", "name": name, "device": device, "deviceId": Prefs.shared.deviceId, "lang": I18n.shared.lang ?? "en"])
         if watching { send(["type": "watching", "value": true]) }
         if chatOn { send(["type": "chat_sub", "on": true]) }
         receive(t)
@@ -155,6 +158,8 @@ final class SyncClient: ObservableObject {
         case "translations_version": if I18n.shared.checkVersion(o.str("lang"), o.string("version")) { menuVersion += 1 }
         case "history_changed": historyVersion += 1
         case "notice", "error": if let t = o.str("text") { notice = (Date(), t) }
+        case "name":
+            if let n = o.str("name"), !n.isEmpty, n != name { name = n; onRenamed?(n) }
         default: break
         }
     }

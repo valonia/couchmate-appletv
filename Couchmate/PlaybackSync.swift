@@ -6,8 +6,16 @@ import TVVLCKit
 /// speed (±8 %), large ones with a seek (with a learned lead to make up for buffering time).
 @MainActor
 final class PlaybackSync: ObservableObject {
-    let player = VLCMediaPlayer()
+    /// The player on screen. Swapped for the one that buffered the next item when it follows on (see prepareNext).
+    private(set) var player = VLCMediaPlayer()
     let videoView = UIView()
+
+    // The next one, opened paused behind the current one so the switch is nearly seamless (like the Android app).
+    private var nextPlayer: VLCMediaPlayer?
+    private let nextView = UIView() // VLC wants somewhere to draw – never shown
+    private var preparedURL: String?
+    private var preparedCaptions: String?
+    private var reportedNextReady: String?
     @Published private(set) var status = ""
     /// Counts up when the tracks (audio, subtitles) may have changed – the settings panel redraws.
     @Published private(set) var tracksVersion = 0
@@ -112,7 +120,62 @@ final class PlaybackSync: ObservableObject {
 
     func shutdown() {
         player.stop()
+        dropNext()
         loadedURL = nil
+    }
+
+    // MARK: - the next one
+
+    /// "Next" known before the end (music, episodes): open it paused in a second player, and tell the server once
+    /// it has buffered – it only switches straight on when every app has (otherwise everyone waits as usual).
+    private func prepareNext(_ st: RoomState, sync: SyncClient) {
+        let early = st.upNext.flatMap { u in u.early && u.media != nil ? u : nil }
+        let nextId = early?.item.id ?? st.preparedNext?.item.id
+        let next = (early?.media ?? st.preparedNext?.media).flatMap { m in m.live ? nil : m }
+        let nextURL = next.map { urlFor($0) }
+        if nextURL == preparedURL {
+            if let n = nextPlayer, let u = nextURL, let id = nextId, reportedNextReady != u, !n.isPlaying,
+               n.state == .paused || n.state == .buffering || n.state == .esAdded {
+                let m: VLCMedia? = n.media
+                let len: VLCTime? = m?.length
+                if (len?.intValue ?? 0) > 0 {
+                    reportedNextReady = u
+                    sync.nextReady(id)
+                }
+            }
+            return
+        }
+        dropNext()
+        guard let next, let nextURL else { return }
+        let p = VLCMediaPlayer()
+        p.drawable = nextView
+        p.media = makeMedia(nextURL, audio: audioURL(next, nextURL), live: false, startAt: nil, startPaused: true)
+        p.play()
+        nextPlayer = p
+        preparedURL = nextURL
+        preparedCaptions = captionsFor(next, nextURL)
+    }
+
+    private func dropNext() {
+        nextPlayer?.stop()
+        nextPlayer = nil
+        preparedURL = nil
+        preparedCaptions = nil
+        reportedNextReady = nil
+    }
+
+    /// The next one became the one that plays and it was buffered: it takes over the screen.
+    private func takeOverNext() -> Bool {
+        guard let n = nextPlayer else { return false }
+        let old = player
+        old.drawable = nil
+        n.drawable = videoView
+        player = n
+        nextPlayer = nil
+        preparedURL = nil
+        reportedNextReady = nil
+        old.stop()
+        return true
     }
 
     private var uptime: TimeInterval { ProcessInfo.processInfo.systemUptime }
@@ -125,12 +188,39 @@ final class PlaybackSync: ObservableObject {
         }
         guard let st, let media = st.media else {
             if loadedURL != nil { player.stop(); loadedURL = nil }
+            dropNext()
             status = tr("Nothing playing")
             return
         }
 
         let url = urlFor(media)
         if url != loadedURL {
+            // Buffered behind the one that just ended: switch to it instead of opening it again.
+            let handover = url == preparedURL && !media.live
+            let captions = handover ? preparedCaptions : nil
+            if handover && takeOverNext() {
+                loadedURL = url
+                seekedVersion = st.version
+                readyVersion = -1
+                correcting = false
+                livePaused = false
+                leadCheck = false
+                rateWorks = nil
+                prefsApplied = false
+                rate = 1
+                player.rate = 1
+                mutedForLoad = false
+                setVolume(100)
+                pendingCaptions = captions
+                captionsOn = captions != nil
+                let start = target(st, sync)
+                if start > 1 { seek(start) }
+                if !st.paused && sync.serverNow() >= st.refTime { player.play() }
+                lastSeekAt = now
+                cooldownUntil = now + 2
+                return
+            }
+            dropNext()
             loadedURL = url
             seekedVersion = st.version
             readyVersion = -1
@@ -165,6 +255,7 @@ final class PlaybackSync: ObservableObject {
             prefsApplied = true
             applyTrackPrefs()
         }
+        if !media.live { prepareNext(st, sync: sync) }
         if media.live { tickLive(st, media) } else { tickVod(st, sync, now) }
     }
 
@@ -289,7 +380,13 @@ final class PlaybackSync: ObservableObject {
     }
 
     private func load(_ urlString: String, audio: String?, live: Bool, startAt: Double?) {
-        guard let url = URL(string: urlString) else { return }
+        guard let media = makeMedia(urlString, audio: audio, live: live, startAt: startAt, startPaused: false) else { return }
+        player.media = media
+        player.play()
+    }
+
+    private func makeMedia(_ urlString: String, audio: String?, live: Bool, startAt: Double?, startPaused: Bool) -> VLCMedia? {
+        guard let url = URL(string: urlString) else { return nil }
         let media = VLCMedia(url: url)
         // Live TV gets a bigger buffer (fewer stutters; nobody notices a few seconds on live). Films and episodes
         // keep a small one so starting and seeking stay quick. (For network streams this is the setting that counts –
@@ -298,8 +395,9 @@ final class PlaybackSync: ObservableObject {
         // Video and audio as two files (e.g. YouTube in HD) – played together.
         if let audio { media.addOption(":input-slave=\(audio)") }
         if let s = startAt, s > 0 { media.addOption(String(format: ":start-time=%.2f", s)) }
-        player.media = media
-        player.play()
+        // The next one: opened and buffered, but waiting on its first picture until it is its turn.
+        if startPaused { media.addOption(":start-paused") }
+        return media
     }
 
     private func seek(_ sec: Double) {
