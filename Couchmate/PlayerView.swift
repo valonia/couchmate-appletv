@@ -86,6 +86,7 @@ struct PlayerView: View {
 
             if panelOpen {
                 ChannelPanel(title: media?.subtitle ?? tr("Channels"), channels: channels, epg: epg, currentKey: media?.key, api: api,
+                             favoriteKeys: Set(sync.favorites.map(\.key)), onFavorite: { sync.toggleFavorite($0) },
                              onPick: { loadChannel($0); panelOpen = false }, onClose: { panelOpen = false })
                     .transition(.move(edge: .leading))
             }

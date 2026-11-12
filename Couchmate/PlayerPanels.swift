@@ -292,6 +292,9 @@ struct ChannelPanel: View {
     let epg: [String: [Program]]
     let currentKey: String?
     let api: Api
+    /// The room's favourites (a star on those), and what holding OK on a channel does: add or remove it.
+    var favoriteKeys: Set<String> = []
+    var onFavorite: ((Item) -> Void)? = nil
     let onPick: (Item) -> Void
     let onClose: () -> Void
     var body: some View {
@@ -300,7 +303,10 @@ struct ChannelPanel: View {
         HStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 12.dp) {
                 HStack {
-                    Text(title).font(.s(20, .bold))
+                    VStack(alignment: .leading, spacing: 2.dp) {
+                        Text(title).font(.s(20, .bold)).lineLimit(1)
+                        if onFavorite != nil { Text(tr("Hold OK: favorite")).font(.s(12)).foregroundStyle(Palette.faint) }
+                    }
                     Spacer()
                     ClockView(size: 20)
                 }
@@ -312,7 +318,9 @@ struct ChannelPanel: View {
                         ScrollView {
                             LazyVStack(spacing: 2.dp) {
                                 ForEach(Array(channels.enumerated()), id: \.offset) { idx, item in
-                                    ChannelRow(item: item, epg: epg[item.id], now: t, playing: item.key == currentKey, iconUrl: api.abs(item.image)) { onPick(item) }
+                                    ChannelRow(item: item, epg: epg[item.id], now: t, playing: item.key == currentKey, iconUrl: api.abs(item.image),
+                                               favorite: favoriteKeys.contains(item.key),
+                                               onLongPress: onFavorite.map { f in { f(item) } }) { onPick(item) }
                                         .id(keys[idx])
                                 }
                             }
