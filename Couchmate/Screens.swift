@@ -67,7 +67,7 @@ struct SearchView: View {
     private func search() async {
         let q = query.trimmingCharacters(in: .whitespaces)
         if q.count < 2 { result = nil; error = nil; return }
-        try? await Task.sleep(nanoseconds: 350_000_000)
+        try? await Task.sleep(nanoseconds: 700_000_000) // every search asks every plugin – wait for a pause in the typing
         if Task.isCancelled { return }
         loading = true
         do {
