@@ -36,9 +36,12 @@ struct RoomView: View {
     let onReconnect: () -> Void
     @StateObject var sync: SyncClient
     let api: Api
+    /// Fullscreen video, or the menus with the video playing behind them.
     @State var inPlayer = false
     @State var seenMedia: String?
+    @State var joined = false
     @State var firstVersion: Int?
+    @State var fullscreenHint = false
     @Environment(\.scenePhase) var scenePhase
 
     init(onReconnect: @escaping () -> Void) {
@@ -52,12 +55,26 @@ struct RoomView: View {
     }
 
     var body: some View {
-        Group {
-            if inPlayer, sync.state?.media != nil {
-                PlayerView(sync: sync, api: api, onExit: { inPlayer = false })
-            } else {
-                BrowseView(sync: sync, api: api, onOpenPlayer: { inPlayer = true }, onReconnect: onReconnect)
+        let playing = sync.state?.media != nil
+        ZStack {
+            // One player for as long as something plays – it keeps going (sound, sync, the next song) behind the menus.
+            if playing { PlayerView(sync: sync, api: api, fullscreen: inPlayer, onExit: { inPlayer = false }) }
+            if !inPlayer || !playing {
+                BrowseView(sync: sync, api: api, onOpenPlayer: { inPlayer = true }, onReconnect: onReconnect, overVideo: playing)
             }
+            if fullscreenHint, playing, !inPlayer {
+                Text(tr("Press OK again for fullscreen")).font(.s(17)).foregroundStyle(.white)
+                    .padding(.horizontal, 24.dp).padding(.vertical, 12.dp)
+                    .background(Capsule().fill(Color(hex: 0xE61A1F29)))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom).padding(.bottom, 40.dp)
+                    .allowsHitTesting(false)
+            }
+        }
+        .onAppear { sync.onPickedPlaying = { inPlayer = true } }
+        .task(id: fullscreenHint) {
+            guard fullscreenHint else { return }
+            try? await Task.sleep(nanoseconds: 6_000_000_000)
+            fullscreenHint = false
         }
         .task { sync.start() }
         .task { await I18n.shared.pump(api) }
@@ -65,16 +82,19 @@ struct RoomView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { sync.start() } else if phase == .background { sync.stop() }
         }
-        // When someone starts something new, everyone jumps into the player.
+        // Joining while something plays: straight into it. Otherwise nobody is pulled out of the menus – what someone
+        // starts plays behind them, and picking it again (the second click) or "Now playing" opens the fullscreen.
         .onChange(of: sync.state?.media?.key) { _, key in
-            if key == nil { inPlayer = false } else if key != seenMedia { inPlayer = true }
+            if key == nil { inPlayer = false } else if !joined, key != seenMedia { inPlayer = true }
+            joined = true
             seenMedia = key
         }
-        // Starting something that already plays (e.g. "Watch now" on the channel that is on) – into the player anyway.
+        // You started something from the menus: a short "Press OK again for fullscreen" (not for the state we get
+        // when connecting).
         .onChange(of: sync.state?.version) { _, _ in
             guard let st = sync.state else { return }
             if firstVersion == nil { firstVersion = st.version; return }
-            if st.media != nil, st.action == "load", st.changedBy == Prefs.shared.name { inPlayer = true }
+            if st.media != nil, st.action == "load", st.changedBy == sync.name, !inPlayer { fullscreenHint = true }
         }
     }
 }

@@ -226,8 +226,14 @@ final class SyncClient: ObservableObject {
     // MARK: - commands
 
     /// Plays an item for everyone. `position` = where to start (seconds), e.g. when resuming.
-    func load(_ item: Item, position: Double = 0) {
+    /// Called when you pick what already plays (the second click) – the app shows it in fullscreen.
+    var onPickedPlaying: (() -> Void)?
+
+    /// Plays an item for everyone. Picking what already plays does not start it again (unless `exact` – "start
+    /// over"): it opens the fullscreen instead.
+    func load(_ item: Item, position: Double = 0, exact: Bool = false) {
         if item.unavailable { return } // greyed out: shown, never played
+        if !exact, state?.media?.key == item.key { onPickedPlaying?(); return }
         var meta: JSON = ["title": item.title, "live": item.live]
         if let s = item.subtitle { meta["subtitle"] = s }
         if let s = item.image { meta["image"] = s }

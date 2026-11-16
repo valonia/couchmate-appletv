@@ -99,6 +99,20 @@ final class PlaybackSync: ObservableObject {
         tracksVersion += 1
     }
 
+    /// Behind the menus the subtitles would only be in the way: switched off, and the same track back in fullscreen.
+    private var subtitlesHidden = false
+    private var hiddenSubtitle: Int32 = -1
+    func hideSubtitles(_ hide: Bool) {
+        guard hide != subtitlesHidden else { return }
+        subtitlesHidden = hide
+        if hide {
+            hiddenSubtitle = player.currentVideoSubTitleIndex
+            if hiddenSubtitle >= 0 { player.currentVideoSubTitleIndex = -1 }
+        } else if hiddenSubtitle >= 0 {
+            player.currentVideoSubTitleIndex = hiddenSubtitle
+        }
+    }
+
     func setAudio(_ t: Track) {
         player.currentAudioTrackIndex = t.id
         Prefs.shared.audioLang = t.name
@@ -115,6 +129,11 @@ final class PlaybackSync: ObservableObject {
         } else if p.subLang == "off" { player.currentVideoSubTitleIndex = -1 }
         else if !p.subLang.isEmpty, let t = subtitleTracks.first(where: { $0.name == p.subLang }) { player.currentVideoSubTitleIndex = t.id }
         if !p.audioLang.isEmpty, let t = audioTracks.first(where: { $0.name == p.audioLang }) { player.currentAudioTrackIndex = t.id }
+        // A new video while behind the menus: remember its subtitle for the fullscreen, show none now.
+        if subtitlesHidden {
+            hiddenSubtitle = player.currentVideoSubTitleIndex
+            if hiddenSubtitle >= 0 { player.currentVideoSubTitleIndex = -1 }
+        }
         tracksVersion += 1
     }
 

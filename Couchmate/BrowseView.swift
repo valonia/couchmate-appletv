@@ -9,6 +9,8 @@ struct BrowseView: View {
     let api: Api
     let onOpenPlayer: () -> Void
     let onReconnect: () -> Void
+    /// A video plays behind the menus: the content side is see-through (the video shows dimmed), the menu is not.
+    var overVideo = false
     @State var menu: [MenuEntry]?
     @State var menuError: String?
     @State var selected: String?
@@ -43,7 +45,7 @@ struct BrowseView: View {
                                onLanguage: { sync.languageChanged(); sync.menuVersion += 1 })
             }
         }
-        .background(Palette.bg.ignoresSafeArea())
+        .background(Palette.bg.opacity(overVideo ? 0.8 : 1).ignoresSafeArea())
         // The menu comes from the server: fetched again when a plugin or the order changes, otherwise every minute.
         .task(id: "\(sync.menuVersion)|\(sync.connected)") {
             while !Task.isCancelled {

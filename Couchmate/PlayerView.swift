@@ -13,6 +13,8 @@ struct VideoSurface: UIViewRepresentable {
 struct PlayerView: View {
     @ObservedObject var sync: SyncClient
     let api: Api
+    /// False: behind the menus – only the video, no keys, panels or cards.
+    var fullscreen = true
     let onExit: () -> Void
     @StateObject var controller = PlaybackSync()
     @State var now = Date()
@@ -32,13 +34,14 @@ struct PlayerView: View {
 
     private var media: Media? { sync.state?.media }
     private var spec: PlayerSpec { media?.player ?? defaultSpec(media) }
-    private var chatVisible: Bool { media?.chat == true && showChat }
+    private var chatVisible: Bool { fullscreen && media?.chat == true && showChat }
+    private var showOverlay: Bool { !anyPanel && (now < overlayUntil || sync.state?.paused == true || pendingSeek != nil) }
     private var anyPanel: Bool { panelOpen || settingsPanel || queueOpen }
     private var chatWidth: CGFloat { queueOpen ? 460.dp : chatVisible ? 400.dp : 0 }
 
     var body: some View {
         let st = sync.state
-        let showOverlay = !anyPanel && (now < overlayUntil || st?.paused == true || pendingSeek != nil)
+        let showOverlay = self.showOverlay
         ZStack(alignment: .topLeading) {
             Color.black.ignoresSafeArea()
             // The video – a button so the remote's centre press is OK; moves and play/pause go to the plugin's keys.
@@ -48,11 +51,13 @@ struct PlayerView: View {
                     .padding(.trailing, chatWidth)
             }
             .buttonStyle(FocusStyle(look: .plain))
-            .disabled(anyPanel)
+            .disabled(anyPanel || !fullscreen)
             .onMoveCommand { dir in move(dir) }
             .onPlayPauseCommand { sync.toggle(); poke() }
             .ignoresSafeArea()
 
+            // Behind the menus only the video shows – "next episode" and the rest wait for the fullscreen.
+            if fullscreen {
             // The column to the right of the video: the queue while it is open, otherwise the chat.
             if queueOpen, let q = queue {
                 QueuePanel(queue: q, api: api) { item in
@@ -106,10 +111,16 @@ struct PlayerView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing).padding(48.dp)
             }
             NoticeToast(sync: sync).frame(maxWidth: .infinity, alignment: .top).padding(.top, 24.dp).allowsHitTesting(false)
+            }
         }
         .animation(.easeOut(duration: 0.2), value: showOverlay)
         .animation(.easeOut(duration: 0.2), value: anyPanel)
         .onExitCommand { back() }
+        // Leaving the fullscreen closes the panels and hides the subtitles; coming back shows the info a moment.
+        .onChange(of: fullscreen, initial: true) { _, full in
+            if full { poke() } else { panelOpen = false; settingsPanel = false; queueOpen = false }
+            controller.hideSubtitles(!full)
+        }
         .onAppear {
             sync.setWatching(true)
             controller.urlFor = { m in urlFor(m) }
@@ -155,6 +166,8 @@ struct PlayerView: View {
     private func poke() { overlayUntil = Date().addingTimeInterval(6); now = Date() }
 
     private func pressOK() {
+        // The first OK only shows the info (so you see what the keys do); OK again does it.
+        if !showOverlay, sync.state?.reminder == nil, sync.state?.upNext == nil { poke(); return }
         let cur = sync.state
         if cur?.reminder != nil { sync.reminderNow(); return } // OK = switch channel now
         if cur?.upNext != nil { sync.nextNow(); return } // OK = play the next one now
@@ -172,6 +185,7 @@ struct PlayerView: View {
     }
 
     private func back() {
+        guard fullscreen else { return }
         if settingsPanel { settingsPanel = false }
         else if panelOpen { panelOpen = false }
         else if queueOpen { queueOpen = false }

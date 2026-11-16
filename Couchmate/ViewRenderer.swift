@@ -245,8 +245,9 @@ extension ViewContext {
         if a.has("play"), var item = toItem(value(a["play"])) {
             let sub = a.str("subtitle").map { string($0) }.flatMap { $0.isEmpty ? nil : $0 }
             if item.subtitle == nil, let sub { item.subtitle = sub }
-            let pos = a["position"].flatMap { Double(text(value($0))) } ?? 0
-            sync.load(item, position: pos)
+            let given = a["position"].flatMap { Double(text(value($0))) }
+            // An explicit 0 ("start over") restarts even what already plays; anything else on it opens the fullscreen.
+            sync.load(item, position: given ?? 0, exact: given == 0)
         }
         if a.has("open") {
             open(ViewRef(plugin: a.str("plugin") ?? plugin, id: string(a["open"]), params: params(a.obj("params"))))

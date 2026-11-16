@@ -142,7 +142,7 @@ struct HistoryView: View {
     }
 
     private func play(_ e: HistoryEntry, fromStart: Bool = false) {
-        sync.load(e.toItem(), position: !fromStart && e.resumable ? e.position : 0)
+        sync.load(e.toItem(), position: !fromStart && e.resumable ? e.position : 0, exact: fromStart)
     }
 }
 

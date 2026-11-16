@@ -156,7 +156,7 @@ func drawBlock(_ ctx: ViewContext, _ node: JSON, fill: Fill) -> AnyView {
     case "topbar":
         return ctx.env.topbar ?? AnyView(EmptyView())
     case "button":
-        view = AnyView(Pill(text: ctx.string(node["text"]), selected: truthy(ctx.value(node["selected"]))) { ctx.run(node["onClick"]) })
+        view = AnyView(ViewButton(text: ctx.string(node["text"]), selected: truthy(ctx.value(node["selected"])), autofocus: node.bool("autofocus")) { ctx.run(node["onClick"]) })
     case "list", "grid":
         view = AnyView(ListBlock(ctx: ctx, node: node, grid: type == "grid"))
         skipPadding = true
@@ -614,5 +614,24 @@ struct PluginOverlay: View {
     var body: some View {
         let ctx = ViewContext(plugin: plugin, api: api, sync: sync, state: state, roots: ["media": media, "player": player], env: makeEnv(sync, topbar: topbar), open: { _ in }, back: {})
         BlockView(ctx, node).frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+/// A view's button. "autofocus": true – it takes focus when the view opens (e.g. Play on a film's page).
+struct ViewButton: View {
+    let text: String
+    let selected: Bool
+    let autofocus: Bool
+    let action: () -> Void
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        Pill(text: text, selected: selected, action: action)
+            .focused($focused)
+            .task {
+                guard autofocus else { return }
+                try? await Task.sleep(nanoseconds: 200_000_000)
+                focused = true
+            }
     }
 }
