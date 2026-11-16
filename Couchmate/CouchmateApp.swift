@@ -58,7 +58,11 @@ struct RoomView: View {
         let playing = sync.state?.media != nil
         ZStack {
             // One player for as long as something plays – it keeps going (sound, sync, the next song) behind the menus.
-            if playing { PlayerView(sync: sync, api: api, fullscreen: inPlayer, onExit: { inPlayer = false }) }
+            if playing {
+                PlayerView(sync: sync, api: api, fullscreen: inPlayer, onExit: { inPlayer = false })
+                    // Behind the menus nothing in the player can take focus – the remote belongs to the menus.
+                    .disabled(!inPlayer)
+            }
             if !inPlayer || !playing {
                 BrowseView(sync: sync, api: api, onOpenPlayer: { inPlayer = true }, onReconnect: onReconnect, overVideo: playing)
             }

@@ -53,7 +53,7 @@ struct PlayerView: View {
             .buttonStyle(FocusStyle(look: .plain))
             .disabled(anyPanel || !fullscreen)
             .onMoveCommand { dir in move(dir) }
-            .onPlayPauseCommand { sync.toggle(); poke() }
+            .onPlayPauseCommand { if fullscreen { sync.toggle(); poke() } }
             .ignoresSafeArea()
 
             // Behind the menus only the video shows – "next episode" and the rest wait for the fullscreen.
@@ -166,6 +166,7 @@ struct PlayerView: View {
     private func poke() { overlayUntil = Date().addingTimeInterval(6); now = Date() }
 
     private func pressOK() {
+        guard fullscreen else { return } // behind the menus the keys belong to the menus
         // The first OK only shows the info (so you see what the keys do); OK again does it.
         if !showOverlay, sync.state?.reminder == nil, sync.state?.upNext == nil { poke(); return }
         let cur = sync.state
@@ -175,6 +176,7 @@ struct PlayerView: View {
     }
 
     private func move(_ dir: MoveCommandDirection) {
+        guard fullscreen else { return }
         switch dir {
         case .up: perform(spec.keys["up"] ?? "info")
         case .down: perform(spec.keys["down"] ?? "settings")

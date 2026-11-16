@@ -46,6 +46,12 @@ struct BrowseView: View {
             }
         }
         .background(Palette.bg.opacity(overVideo ? 0.8 : 1).ignoresSafeArea())
+        // Back from the fullscreen: focus straight to the menu (otherwise it can stay on the video behind it).
+        .task {
+            guard overVideo else { return }
+            try? await Task.sleep(nanoseconds: 150_000_000)
+            if navFocus == nil { navFocus = selected ?? searchKey }
+        }
         // The menu comes from the server: fetched again when a plugin or the order changes, otherwise every minute.
         .task(id: "\(sync.menuVersion)|\(sync.connected)") {
             while !Task.isCancelled {
