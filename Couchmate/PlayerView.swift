@@ -31,6 +31,8 @@ struct PlayerView: View {
     @State var queue: Queue?
     @State var starting: Item?
     @State var startingFrom = 0
+    /// The video takes the focus when the fullscreen opens, so the remote works straight away.
+    @FocusState var videoFocused: Bool
 
     private var media: Media? { sync.state?.media }
     private var spec: PlayerSpec { media?.player ?? defaultSpec(media) }
@@ -52,6 +54,7 @@ struct PlayerView: View {
             }
             .buttonStyle(FocusStyle(look: .plain))
             .disabled(anyPanel || !fullscreen)
+            .focused($videoFocused)
             .onMoveCommand { dir in move(dir) }
             .onPlayPauseCommand { if fullscreen { sync.toggle(); poke() } }
             .ignoresSafeArea()
@@ -118,7 +121,10 @@ struct PlayerView: View {
         .onExitCommand { back() }
         // Leaving the fullscreen closes the panels and hides the subtitles; coming back shows the info a moment.
         .onChange(of: fullscreen, initial: true) { _, full in
-            if full { poke() } else { panelOpen = false; settingsPanel = false; queueOpen = false }
+            if full {
+                poke()
+                Task { try? await Task.sleep(nanoseconds: 150_000_000); if fullscreen { videoFocused = true } }
+            } else { panelOpen = false; settingsPanel = false; queueOpen = false }
             controller.hideSubtitles(!full)
         }
         .onAppear {
