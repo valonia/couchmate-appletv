@@ -134,7 +134,15 @@ final class SyncClient: ObservableObject {
             if samples.count > 12 { samples.removeFirst() }
             offsetMs = samples.min { $0.rtt < $1.rtt }?.offset ?? 0
         case "state":
-            if let s = o.obj("state") { state = parseState(s) }
+            if let s = o.obj("state") {
+                let st = parseState(s)
+                state = st
+                // What we started has arrived: open the fullscreen if it was picked again while it was starting.
+                if let p = pending, st.media?.key == p.key {
+                    pending = nil
+                    if p.again { onPickedPlaying?() }
+                }
+            }
         case "chat":
             let msgs = o.objects("messages").map { ChatMsg(user: $0.string("user"), color: $0.str("color"), text: $0.string("text")) }
             chat = Array(((o.bool("reset") ? [] : chat) + msgs).suffix(150))
@@ -157,7 +165,9 @@ final class SyncClient: ObservableObject {
         case "translations_changed": I18n.shared.invalidate(o.str("lang")); menuVersion += 1
         case "translations_version": if I18n.shared.checkVersion(o.str("lang"), o.string("version")) { menuVersion += 1 }
         case "history_changed": historyVersion += 1
-        case "notice", "error": if let t = o.str("text") { notice = (Date(), t) }
+        case "notice", "error":
+            if o.string("type") == "error" { pending = nil }
+            if let t = o.str("text") { notice = (Date(), t) }
         case "name":
             if let n = o.str("name"), !n.isEmpty, n != name { name = n; onRenamed?(n) }
         default: break
@@ -228,12 +238,20 @@ final class SyncClient: ObservableObject {
     /// Plays an item for everyone. `position` = where to start (seconds), e.g. when resuming.
     /// Called when you pick what already plays (the second click) – the app shows it in fullscreen.
     var onPickedPlaying: (() -> Void)?
+    /// What we asked to play and the server has not started yet.
+    private var pending: (key: String, again: Bool, at: Date)?
 
     /// Plays an item for everyone. Picking what already plays does not start it again (unless `exact` – "start
     /// over"): it opens the fullscreen instead.
     func load(_ item: Item, position: Double = 0, exact: Bool = false) {
         if item.unavailable { return } // greyed out: shown, never played
         if !exact, state?.media?.key == item.key { onPickedPlaying?(); return }
+        // Still starting (the server asks the plugin for the stream first, which can take a few seconds):
+        // picking it again means "fullscreen when it starts", not "start it over".
+        if !exact, let p = pending, p.key == item.key, Date().timeIntervalSince(p.at) < 30 {
+            pending = (p.key, true, p.at); return
+        }
+        pending = (item.key, false, Date())
         var meta: JSON = ["title": item.title, "live": item.live]
         if let s = item.subtitle { meta["subtitle"] = s }
         if let s = item.image { meta["image"] = s }
