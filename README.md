@@ -19,9 +19,15 @@ Start the app, write the server's address (e.g. `192.168.1.10:8787`), your name 
 
 ## The remote
 
-In the player, the plugin decides what the touch surface's up/down/left/right and a click do (pause, channel list,
-skip, queue …). Play/Pause always pauses and plays. **Menu** closes panels, cancels "next" or a reminder for
-everyone, and otherwise goes back to the menu. Hold the click on a card to add it to the favourites.
+The video keeps playing behind the menus: **Menu** in the player shows the menus on top of the dimmed video, with
+the sound still on. Pick something and it starts behind the menus ("Press OK again for fullscreen"); pick it again
+for fullscreen. Movies open an info page with **Play**, **Continue from …** and **Start over**.
+
+In the player, the first click shows the info and buttons around the video; with them up, the plugin decides what
+the touch surface's up/down/left/right and a click do (pause, channel list, skip, queue …). Play/Pause always
+pauses and plays. **Menu** closes panels, cancels "next" or a reminder for everyone, and otherwise goes back to
+the menus. Hold the click on a card, or on a channel in the player's channel list, to add it to the favourites.
+Subtitles from plugins (CC) can be switched on and off in the player's settings; the choice is kept per TV.
 
 ## Build on a Mac
 
